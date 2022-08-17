@@ -229,7 +229,7 @@ class Main(QMainWindow, Ui_Main):
             try:
                 float(self.tela_deposito.lineEdit.text())
             except:
-                QMessageBox.information(None,'NOOBBANK','Valor para depótivo inválido.')
+                QMessageBox.information(None,'NOOBBANK','Valor para depósito inválido.')
                 self.tela_deposito.lineEdit.setText('')
                 self.tela_deposito.lineEdit_2.setText('')
             else:    
