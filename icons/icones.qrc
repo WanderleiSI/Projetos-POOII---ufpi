@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="icones">
+    <file>dolar.png</file>
+    <file>trancarTransparente.png</file>
+    <file>do-utilizadorTransparente.png</file>
+    <file>do-utilizador.png</file>
+    <file>trancar.png</file>
+  </qresource>
+</RCC>
