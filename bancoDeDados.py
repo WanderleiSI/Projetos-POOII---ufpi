@@ -1,5 +1,6 @@
 import mysql.connector
 from mysql.connector import Error
+import hashlib
 #from testeConexao import testeConexao
 
 class BancoDeDados:
@@ -21,9 +22,9 @@ class BancoDeDados:
                 nome varchar(50) NOT NULL,
                 sobrenome varchar(50) NOT NULL,
                 cpf varchar(14) NOT NULL,
-                senha varchar(12) NOT NULL,
+                senha varchar(50) NOT NULL,
                 saldo float default 0.0,
-                PRIMARY KEY (nConta)
+            PRIMARY KEY (nConta)
             )DEFAULT CHARSET = utf8mb4;"""
         self.cursor.execute(sql) 
         self.conexao.commit()
@@ -59,7 +60,11 @@ class BancoDeDados:
     def InsereUsuario(self,nome,sobrenome,cpf,senha):
         pessoa = self.buscaUsuario(cpf)
         if pessoa == None: 
-            dados = F"'{nome}','{sobrenome}','{cpf}','{senha}');"
+            hash = hashlib.md5()
+            hash.update(senha.encode('utf8'))
+            hash = hash.hexdigest()
+            #print(hash)
+            dados = F"'{nome}','{sobrenome}','{cpf}','{hash}');"
             sql = """INSERT INTO clientes (nome,sobrenome,cpf,senha) VALUES(""" + dados
             self.cursor.execute(sql)
             return True
@@ -84,7 +89,12 @@ class BancoDeDados:
     def confereSenha(self,cpf,senha):
         pessoa = self.buscaUsuario(cpf)
         if pessoa != None:
-            if pessoa[4] == senha:
+            hash = hashlib.md5()
+            hash.update(senha.encode('utf8'))
+            hash = hash.hexdigest()
+            print("Confere senha codificada:",hash)
+            print("Confere senha banco:",pessoa[4])
+            if  hash == pessoa[4]:
                 return True
             else:
                 return False

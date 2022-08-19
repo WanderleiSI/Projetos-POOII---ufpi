@@ -127,7 +127,7 @@ class Main(QMainWindow, Ui_Main):
                     conta = self.bd.buscaUsuario(cpf)
                     if not(cpf == '' or senha == ''):
                         if (conta != None):
-                            if senha == conta[4]:
+                            if self.bd.confereSenha(cpf,senha):
                                 _translate = QtCore.QCoreApplication.translate
                                 self.tela_cliente.label_3.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:18pt;\">Bem-vindo(a) {}</span></p></body></html>").format(conta[1]))
                                 self.tela_cliente.label_8.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\">R${}</span></p></body></html>").format(conta[5]))
@@ -147,7 +147,6 @@ class Main(QMainWindow, Ui_Main):
                                             self.tela_cliente.listWidget.addItem(F"Transferência de R${transacao[4]:.2f} por conta nº {transacao[3]}")
                                         elif transacao[2] == "TRANSFERENCIA FEITA PARA":
                                             self.tela_cliente.listWidget.addItem(F"Transferência de R${transacao[4]:.2f} para conta nº {transacao[3]}") 
-                                
 
                                 self.QtStack.setCurrentIndex(2)
                             else:
@@ -244,17 +243,8 @@ class Main(QMainWindow, Ui_Main):
                                 QMessageBox.information(None,'NOOBBANK','Depósito realizado com sucesso.')
                                 self.tela_deposito.lineEdit.setText('')
                                 self.tela_deposito.lineEdit_2.setText('')
-                                _translate = QtCore.QCoreApplication.translate 
-                                self.tela_cliente.label_8.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\">R${}</span></p></body></html>").format(conta[5]))
-                                
                                 valor -= conta[5]
-                                self.bd.transacao(conta[0],"DEPOSITO",valor,conta[0])
-                                
-                                '''self.tela_cliente.listWidget.clear()
-                                conta.historico.transacoes.append(F"Depósito de R${(valor):.2f}")
-                                for transacao in range(len(conta.historico.transacoes)-1,-1,-1):
-                                    self.tela_cliente.listWidget.addItem(conta.historico.transacoes[transacao])'''
-                                
+                                self.bd.transacao(conta[0],"DEPOSITO",valor,conta[0])  
                             except:
                                 self.QtStack.setCurrentIndex(6)
                         else:
@@ -299,15 +289,7 @@ class Main(QMainWindow, Ui_Main):
                                     QMessageBox.information(None,'NOOBBANK','Saque realizado com sucesso.')
                                     self.tela_saque.lineEdit.setText('')
                                     self.tela_saque.lineEdit_2.setText('')
-                                    _translate = QtCore.QCoreApplication.translate
-                                    self.tela_cliente.label_8.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\">R${}</span></p></body></html>").format(conta[5]))
-                        
                                     self.bd.transacao(conta[0],"SAQUE",valor,conta[0])
-
-                                    ''' self.tela_cliente.listWidget.clear()
-                                    conta.historico.transacoes.append(F"Saque de R${(valor):.2f}")
-                                    for transacao in range(len(conta.historico.transacoes)-1,-1,-1):
-                                        self.tela_cliente.listWidget.addItem(conta.historico.transacoes[transacao])'''
                                 else:
                                     QMessageBox.information(None,'NOOBBANK','Saldo insuficiente para realizar saque.')
                                     self.tela_saque.lineEdit.setText('')
@@ -370,9 +352,7 @@ class Main(QMainWindow, Ui_Main):
                                             self.tela_transferencia.lineEdit.setText('')
                                             self.tela_transferencia.lineEdit_3.setText('')
                                             self.tela_transferencia.lineEdit_2.setText('')
-                                            _translate = QtCore.QCoreApplication.translate
-                                            self.tela_cliente.label_8.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\">R${}</span></p></body></html>").format(conta[5]))
-
+                                            
                                         else:
                                             QMessageBox.information(None,'NOOBBANK','Senha incorreta.')
                                             self.tela_transferencia.lineEdit.setText('')
