@@ -234,26 +234,29 @@ class Main(QMainWindow, Ui_Main):
             else:    
                 valor = float(self.tela_deposito.lineEdit.text())
                 if self.bd.conexao.is_connected():
-                    if self.bd.confereSenha(self.tela_principal.lineEdit.text(),self.tela_deposito.lineEdit_2.text()):
-                        if valor > 0.0:
-                            try:
-                                conta = self.bd.buscaUsuario(self.tela_principal.lineEdit.text())
-                                valor += conta[5]
-                                self.bd.atualizaSaldo(deposita=True,dinheiro=valor,conta = conta[0])
-                                QMessageBox.information(None,'NOOBBANK','Depósito realizado com sucesso.')
+                    try:
+                        if self.bd.confereSenha(self.tela_principal.lineEdit.text(),self.tela_deposito.lineEdit_2.text()):
+                            if valor > 0.0:
+                                try:
+                                    conta = self.bd.buscaUsuario(self.tela_principal.lineEdit.text())
+                                    valor += conta[5]
+                                    self.bd.atualizaSaldo(deposita=True,dinheiro=valor,conta = conta[0])
+                                    QMessageBox.information(None,'NOOBBANK','Depósito realizado com sucesso.')
+                                    self.tela_deposito.lineEdit.setText('')
+                                    self.tela_deposito.lineEdit_2.setText('')
+                                    valor -= conta[5]
+                                    self.bd.transacao(conta[0],"DEPOSITO",valor,conta[0])  
+                                except:
+                                    self.QtStack.setCurrentIndex(6)
+                            else:
+                                QMessageBox.information(None,'NOOBBANK','Valor para depótivo inválido.')
                                 self.tela_deposito.lineEdit.setText('')
                                 self.tela_deposito.lineEdit_2.setText('')
-                                valor -= conta[5]
-                                self.bd.transacao(conta[0],"DEPOSITO",valor,conta[0])  
-                            except:
-                                self.QtStack.setCurrentIndex(6)
                         else:
-                            QMessageBox.information(None,'NOOBBANK','Valor para depótivo inválido.')
-                            self.tela_deposito.lineEdit.setText('')
-                            self.tela_deposito.lineEdit_2.setText('')
-                    else:
-                        QMessageBox.information(None,'NOOBBANK','Senha incorreta.')
-                        self.tela_deposito.lineEdit_2.setText('')  
+                            QMessageBox.information(None,'NOOBBANK','Senha incorreta.')
+                            self.tela_deposito.lineEdit_2.setText('')  
+                    except:
+                        self.QtStack.setCurrentIndex(6)
                 else:
                     self.QtStack.setCurrentIndex(6)         
         else:
