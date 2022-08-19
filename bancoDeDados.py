@@ -92,8 +92,6 @@ class BancoDeDados:
             hash = hashlib.md5()
             hash.update(senha.encode('utf8'))
             hash = hash.hexdigest()
-            print("Confere senha codificada:",hash)
-            print("Confere senha banco:",pessoa[4])
             if  hash == pessoa[4]:
                 return True
             else:
