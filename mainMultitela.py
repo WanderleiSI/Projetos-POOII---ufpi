@@ -4,15 +4,17 @@ import os
 from PyQt5 import QtWidgets,QtGui,QtCore
 from PyQt5.QtWidgets import QMainWindow,QApplication,QMessageBox,QFileDialog
 
-from telaCadastro import Tela_Cadastro
-from telaCliente import Tela_Cliente
-from telaPrincipal import Tela_Principal
-from telaDeposito import Tela_Deposito
-from telaSaque import Tela_Saque
-from telaTransferencia import Tela_Transferencia
-from telaFalhaConexao import Tela_FalhaConexao
-from bancoDeDados import BancoDeDados
+from Cliente.telaCadastro import Tela_Cadastro
+from Cliente.telaCliente import Tela_Cliente
+from Cliente.telaPrincipal import Tela_Principal
+from Cliente.telaDeposito import Tela_Deposito
+from Cliente.telaSaque import Tela_Saque
+from Cliente.telaTransferencia import Tela_Transferencia
+from Cliente.telaFalhaConexao import Tela_FalhaConexao
+from Servidor.bancoDeDados import BancoDeDados
 
+#from Servidor.servidorNoobBank import Servidor
+from Cliente.clienteNoobBank import Cliente
 
 class Ui_Main(QtWidgets.QWidget): 
     def setupUi(self,Main):
@@ -63,14 +65,17 @@ class Main(QMainWindow, Ui_Main):
         super(Main,self).__init__(parent)
         self.setupUi(self)
 
-        self.bd = BancoDeDados()
-        self.bd.conectarBanco()
-        if not self.bd.conectado:
+        #self.servidor = Servidor()
+        #self.servidor.criarBancoDeDados()
+    
+        """if not self.servidor.bd.conectado:
             self.QtStack.setCurrentIndex(6)
         else:
-            self.bd.TabelaUsuario()
-            self.bd.TabelaTransacoes()
+            self.servidor.bd.TabelaUsuario()
+            self.servidor.bd.TabelaTransacoes()"""
         
+        self.cliente = Cliente()
+            
         self.tela_principal.botaoPrincipalEntrar.clicked.connect(self.abrirTelaCliente)
         self.tela_principal.botaoPrincipalCadastrar.clicked.connect(self.abrirTelaCadastro)
         self.tela_principal.botaoPrincipalSair.clicked.connect(self.sairPrincipal)
@@ -96,14 +101,14 @@ class Main(QMainWindow, Ui_Main):
         self.tela_falhaconexao.botaoReconecta.clicked.connect(self.reconectar)
 
     def reconectar(self):
-        self.bd.conectarBanco()
-        if self.bd.conectado:
-            self.bd.TabelaUsuario()
-            self.bd.TabelaTransacoes()
+        self.cliente.requisicao('CONECTAR_BANCO_DE_DADOS')
+        self.cliente.resposta()
+        if self.cliente.retorno == 'CONECTADO':
             self.tela_principal.lineEdit.setText('')
             self.tela_principal.lineEdit_2.setText('')
             self.QtStack.setCurrentIndex(0)
-    
+            
+            
     def abrirTelaCadastro(self):
         self.tela_cadastro.lineEdit.setText('')
         self.tela_cadastro.lineEdit_2.setText('')
@@ -113,100 +118,98 @@ class Main(QMainWindow, Ui_Main):
         self.QtStack.setCurrentIndex(1)
 
     def abrirTelaCliente(self):
-        try:
-            int(self.tela_principal.lineEdit.text())
-        except:
-            QMessageBox.information(None,'NOOBBANK','Cpf inválido.')
-            self.tela_principal.lineEdit.setText('')
-            self.tela_principal.lineEdit_2.setText('')
-        else:
-            cpf = self.tela_principal.lineEdit.text()
-            senha = self.tela_principal.lineEdit_2.text()
-            if self.bd.conexao.is_connected():
-                try:
-                    conta = self.bd.buscaUsuario(cpf)
-                    if not(cpf == '' or senha == ''):
-                        if (conta != None):
-                            if self.bd.confereSenha(cpf,senha):
-                                _translate = QtCore.QCoreApplication.translate
-                                self.tela_cliente.label_3.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:18pt;\">Bem-vindo(a) {}</span></p></body></html>").format(conta[1]))
-                                self.tela_cliente.label_8.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\">R${}</span></p></body></html>").format(conta[5]))
-                                self.tela_cliente.label_10.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\"> {} {}</span></p></body></html>").format(conta[1],conta[2]))
-                                self.tela_cliente.label_11.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\"> {}</span></p></body></html>").format(conta[3]))
-                                self.tela_cliente.label_12.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\"> {}</span></p></body></html>").format(str(conta[0])))
-                               
-                                self.tela_cliente.listWidget.clear()
-                                historico = self.bd.PreencheHistorico(conta[0])
-                                if historico:
-                                    for transacao in historico:
-                                        if transacao[2] == "DEPOSITO":
-                                            self.tela_cliente.listWidget.addItem(F"Depósito de R${transacao[4]:.2f}")
-                                        elif transacao[2] == "SAQUE":
-                                            self.tela_cliente.listWidget.addItem(F"Saque de R${transacao[4]:.2f}")
-                                        elif transacao[2] == "TRANSFERENCIA RECEBIDA POR":
-                                            self.tela_cliente.listWidget.addItem(F"Transferência de R${transacao[4]:.2f} por conta nº {transacao[3]}")
-                                        elif transacao[2] == "TRANSFERENCIA FEITA PARA":
-                                            self.tela_cliente.listWidget.addItem(F"Transferência de R${transacao[4]:.2f} para conta nº {transacao[3]}") 
+        self.cliente.requisicao(f"CLIENTE,{self.tela_principal.lineEdit.text()},{self.tela_principal.lineEdit_2.text()}")
+        self.cliente.resposta()
+        if isinstance(self.cliente.retorno,str):
+            usuario = self.cliente.retorno.split(',')
+            _translate = QtCore.QCoreApplication.translate
+            self.tela_cliente.label_3.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:18pt;\">Bem-vindo(a) {}</span></p></body></html>").format(usuario[1]))
+            self.tela_cliente.label_8.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\">R${}</span></p></body></html>").format(usuario[5]))
+            self.tela_cliente.label_10.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\"> {} {}</span></p></body></html>").format(usuario[1],usuario[2]))
+            self.tela_cliente.label_11.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\"> {}</span></p></body></html>").format(usuario[3]))
+            self.tela_cliente.label_12.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\"> {}</span></p></body></html>").format(str(usuario[0])))
 
-                                self.QtStack.setCurrentIndex(2)
-                            else:
-                                QMessageBox.information(None,'NOOBBANK','Cpf ou senha inválidos.')
-                        else:
-                            QMessageBox.information(None,'NOOBBANK','Conta não encontrada.')
-                    else:
-                        QMessageBox.information(None,'NOOBBANK','Todos os campos devem ser preenchidos.')
-                except:
-                    self.QtStack.setCurrentIndex(6)     
-            else:
+            self.historico(usuario[0])
+            
+        else:
+            retorno = int(self.cliente.retorno)
+            if retorno == 1:
+                QMessageBox.information(None,'NOOBBANK','Cpf inválido.')
+                self.tela_principal.lineEdit.setText('')
+                self.tela_principal.lineEdit_2.setText('')
+            elif retorno == 2:
                 self.QtStack.setCurrentIndex(6)
+            elif retorno == 3:
+                QMessageBox.information(None,'NOOBBANK','Todos os campos devem ser preenchidos.')
+            elif retorno == 4:
+                QMessageBox.information(None,'NOOBBANK','Conta não encontrada.')
+            elif retorno == 5:
+                QMessageBox.information(None,'NOOBBANK','Cpf ou senha inválidos.')
+                
+             
+    def historico(self,idCliente=None):
+        self.tela_cliente.listWidget.clear()
+        self.cliente.requisicao(F'HISTORICO,{idCliente}')
+        self.cliente.resposta()
+        historico = self.cliente.retorno.split("|")
+        historico.pop()
+
+        for h in historico:
+            aux = h[1:-1].split(",")
+            if aux[2] == " 'DEPOSITO'":
+                self.tela_cliente.listWidget.addItem(F"Depósito de R${float(aux[4]):.2f}")
+                #aux[2] = 'DEPOSITO'
+            elif aux[2] == " 'SAQUE'":
+                self.tela_cliente.listWidget.addItem(F"Saque de R${float(aux[4]):.2f}")
+                #aux[2] = 'SAQUE'
+            elif aux[2] == " 'TRANSFERENCIA FEITA PARA'":
+                self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} para conta nº {aux[3]}")
+                #aux[2] = 'TRANSFERENCIA FEITA PARA'
+            elif aux[2] == " 'TRANSFERENCIA RECEBIDA POR'":
+                self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} por conta nº {aux[3]}")
+                #aux[2] = 'TRANSFERENCIA RECEBIDA POR'
+                
+            """if aux[2] == "DEPOSITO":
+                self.tela_cliente.listWidget.addItem(F"Depósito de R${float(aux[4]):.2f}")
+            elif aux[2] == "SAQUE":
+                self.tela_cliente.listWidget.addItem(F"Saque de R${float(aux[4]):.2f}")
+            elif aux[2] == "TRANSFERENCIA RECEBIDA POR":
+                self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} por conta nº {aux[3]}")
+            elif aux[2] == "TRANSFERENCIA FEITA PARA":
+                self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} para conta nº {aux[3]}")"""
+        self.QtStack.setCurrentIndex(2)
+
 
     def sairPrincipal(self):
-        self.bd.EncerraBanco()
+        self.cliente.requisicao("DESCONECTAR_SERVIDOR")
         sys.exit()
 
     def criarConta(self):
-        try:
-            int(self.tela_cadastro.lineEdit.text())
-        except:
-            nome =  self.tela_cadastro.lineEdit.text()
-            try:
-                int(self.tela_cadastro.lineEdit_2.text())
-            except:
-                sobrenome = self.tela_cadastro.lineEdit_2.text()
-                try:
-                    int(self.tela_cadastro.lineEdit_3.text())
-                except:
-                    QMessageBox.information(None,'NOOBBANK','Valor do campo cpf inválido.')
-                else:
-                    cpf = self.tela_cadastro.lineEdit_3.text()
-                    senha = self.tela_cadastro.lineEdit_4.text()
-                    confirmarSenha = self.tela_cadastro.lineEdit_5.text()
-                    if not (nome == '' or sobrenome == '' or cpf == '' or senha == '' or confirmarSenha == ''):
-                        if senha == confirmarSenha:
-                            if self.bd.conexao.is_connected():
-                                try:
-                                    if (self.bd.InsereUsuario(nome,sobrenome,cpf,senha)):
-                                        QMessageBox.information(None,'NOOBBANK','Conta cadastrada com sucesso')
-                                        nome =  self.tela_cadastro.lineEdit.setText('')
-                                        sobrenome = self.tela_cadastro.lineEdit_2.setText('')
-                                        cpf = self.tela_cadastro.lineEdit_3.setText('')
-                                        senha = self.tela_cadastro.lineEdit_4.setText('')
-                                        confirmarSenha = self.tela_cadastro.lineEdit_5.setText('')
-                                        self.QtStack.setCurrentIndex(0)
-                                    else:
-                                        QMessageBox.information(None,'NOOBBANK','CPF já cadastrado!')
-                                except:
-                                    self.QtStack.setCurrentIndex(6)
-                            else:
-                                self.QtStack.setCurrentIndex(6)
-                        else:
-                            QMessageBox.information(None,'NOOBBANK','Senhas devem ser iguais')
-                    else:
-                        QMessageBox.information(None,'NOOBBANK','Todos os campos devem ser preenchidos!')
-            else:
-                QMessageBox.information(None,'NOOBBANK','Valor do campo nome inválido.')
-        else:
+        self.cliente.requisicao(f"CADASTRO,{self.tela_cadastro.lineEdit.text()},{self.tela_cadastro.lineEdit_2.text()},{self.tela_cadastro.lineEdit_3.text()},{self.tela_cadastro.lineEdit_4.text()},{self.tela_cadastro.lineEdit_5.text()}")
+        self.cliente.resposta()
+        retorno = int(self.cliente.retorno)
+        if retorno == 1:
+            QMessageBox.information(None,'NOOBBANK','Valor do campo nome inválido.')
+        elif retorno == 2:
             QMessageBox.information(None,'NOOBBANK','Valor do campo sobrenome inválido.')
+        elif retorno == 3:    
+            QMessageBox.information(None,'NOOBBANK','Valor do campo cpf inválido.')
+        elif retorno == 4:
+            QMessageBox.information(None,'NOOBBANK','Todos os campos devem ser preenchidos!')
+        elif retorno == 5:
+            QMessageBox.information(None,'NOOBBANK','Senhas devem ser iguais')
+        elif retorno == 6:
+            self.QtStack.setCurrentIndex(6)
+        elif retorno == 7:
+            QMessageBox.information(None,'NOOBBANK','Conta cadastrada com sucesso')
+            self.tela_cadastro.lineEdit.setText('')
+            self.tela_cadastro.lineEdit_2.setText('')
+            self.tela_cadastro.lineEdit_3.setText('')
+            self.tela_cadastro.lineEdit_4.setText('')
+            self.tela_cadastro.lineEdit_5.setText('')
+            self.QtStack.setCurrentIndex(0)
+        elif retorno == 8:
+            QMessageBox.information(None,'NOOBBANK','CPF já cadastrado!')
             
     def botaoVoltar(self):
         self.tela_principal.lineEdit.setText('')
@@ -224,43 +227,28 @@ class Main(QMainWindow, Ui_Main):
         self.abrirTelaCliente()
 
     def deposita(self):
-        if not(self.tela_deposito.lineEdit.text() == '' or self.tela_deposito.lineEdit_2.text() == ''):
-            try:
-                float(self.tela_deposito.lineEdit.text())
-            except:
-                QMessageBox.information(None,'NOOBBANK','Valor para depósito inválido.')
-                self.tela_deposito.lineEdit.setText('')
-                self.tela_deposito.lineEdit_2.setText('')
-            else:    
-                valor = float(self.tela_deposito.lineEdit.text())
-                if self.bd.conexao.is_connected():
-                    try:
-                        if self.bd.confereSenha(self.tela_principal.lineEdit.text(),self.tela_deposito.lineEdit_2.text()):
-                            if valor > 0.0:
-                                try:
-                                    conta = self.bd.buscaUsuario(self.tela_principal.lineEdit.text())
-                                    valor += conta[5]
-                                    self.bd.atualizaSaldo(deposita=True,dinheiro=valor,conta = conta[0])
-                                    QMessageBox.information(None,'NOOBBANK','Depósito realizado com sucesso.')
-                                    self.tela_deposito.lineEdit.setText('')
-                                    self.tela_deposito.lineEdit_2.setText('')
-                                    valor -= conta[5]
-                                    self.bd.transacao(conta[0],"DEPOSITO",valor,conta[0])  
-                                except:
-                                    self.QtStack.setCurrentIndex(6)
-                            else:
-                                QMessageBox.information(None,'NOOBBANK','Valor para depótivo inválido.')
-                                self.tela_deposito.lineEdit.setText('')
-                                self.tela_deposito.lineEdit_2.setText('')
-                        else:
-                            QMessageBox.information(None,'NOOBBANK','Senha incorreta.')
-                            self.tela_deposito.lineEdit_2.setText('')  
-                    except:
-                        self.QtStack.setCurrentIndex(6)
-                else:
-                    self.QtStack.setCurrentIndex(6)         
-        else:
+        self.cliente.requisicao(F"DEPOSITO,{self.tela_deposito.lineEdit.text()},{self.tela_deposito.lineEdit_2.text()},{self.tela_principal.lineEdit.text()},{self.tela_principal.lineEdit_2.text()}")
+        self.cliente.resposta()
+        retorno = int(self.cliente.retorno)
+        if retorno == 1:
             QMessageBox.information(None,'NOOBBANK','Todos os campos devem ser preenchidos.')
+        elif retorno == 2:
+            QMessageBox.information(None,'NOOBBANK','Valor para depósito inválido.')
+            self.tela_deposito.lineEdit.setText('')
+            self.tela_deposito.lineEdit_2.setText('')
+        elif retorno == 3:
+            self.QtStack.setCurrentIndex(6)
+        elif retorno == 4:
+            QMessageBox.information(None,'NOOBBANK','Senha incorreta.')
+            self.tela_deposito.lineEdit_2.setText('')
+        elif retorno == 5:
+            QMessageBox.information(None,'NOOBBANK','Valor para depótivo inválido.')
+            self.tela_deposito.lineEdit.setText('')
+            self.tela_deposito.lineEdit_2.setText('')
+        elif retorno == 6:
+            QMessageBox.information(None,'NOOBBANK','Depósito realizado com sucesso.')
+            self.tela_deposito.lineEdit.setText('')
+            self.tela_deposito.lineEdit_2.setText('')
 
     def abrirSaque(self):
         self.tela_saque.lineEdit.setText('')
@@ -273,43 +261,32 @@ class Main(QMainWindow, Ui_Main):
         self.abrirTelaCliente()
 
     def sacar(self):
-        if not(self.tela_saque.lineEdit.text() == '' or self.tela_saque.lineEdit_2.text() == ''):
-            try:
-                float(self.tela_saque.lineEdit.text())
-            except:
-                QMessageBox.information(None,'NOOBBANK','Valor de saque inválido')
-                self.tela_saque.lineEdit.setText('')
-                self.tela_saque.lineEdit_2.setText('')
-            else:
-                valor = float(self.tela_saque.lineEdit.text())
-                if self.bd.conexao.is_connected():
-                    try:
-                        if self.bd.confereSenha(self.tela_principal.lineEdit.text(),self.tela_saque.lineEdit_2.text()):
-                            if valor > 0.0:
-                                conta = self.bd.buscaUsuario(self.tela_principal.lineEdit.text())
-                                if conta[5] >= valor:
-                                    self.bd.atualizaSaldo(saca=True,dinheiro= (conta[5] - valor),conta = conta[0])
-                                    QMessageBox.information(None,'NOOBBANK','Saque realizado com sucesso.')
-                                    self.tela_saque.lineEdit.setText('')
-                                    self.tela_saque.lineEdit_2.setText('')
-                                    self.bd.transacao(conta[0],"SAQUE",valor,conta[0])
-                                else:
-                                    QMessageBox.information(None,'NOOBBANK','Saldo insuficiente para realizar saque.')
-                                    self.tela_saque.lineEdit.setText('')
-                                    self.tela_saque.lineEdit_2.setText('')
-                            else:
-                                QMessageBox.information(None,'NOOBBANK','Valor para saque inválido.')
-                                self.tela_saque.lineEdit.setText('')
-                                self.tela_saque.lineEdit_2.setText('')
-                        else:
-                            QMessageBox.information(None,'NOOBBANK','Senha incorreta.')
-                            self.tela_saque.lineEdit_2.setText('')
-                    except:
-                        self.QtStack.setCurrentIndex(6)
-                else:
-                    self.QtStack.setCurrentIndex(6)        
-        else:
+        self.cliente.requisicao(F"SAQUE,{self.tela_saque.lineEdit.text()},{self.tela_saque.lineEdit_2.text()},{self.tela_principal.lineEdit.text()},{self.tela_principal.lineEdit_2.text()}")
+        self.cliente.resposta()
+        retorno = int(self.cliente.retorno)
+        if retorno == 1:
             QMessageBox.information(None,'NOOBBANK','Todos os campos devem ser preenchidos.')
+        elif retorno == 2:
+            QMessageBox.information(None,'NOOBBANK','Valor de saque inválido')
+            self.tela_saque.lineEdit.setText('')
+            self.tela_saque.lineEdit_2.setText('')
+        elif retorno == 3:
+            self.QtStack.setCurrentIndex(6)
+        elif retorno == 4:
+            QMessageBox.information(None,'NOOBBANK','Senha incorreta.')
+            self.tela_saque.lineEdit_2.setText('')
+        elif retorno == 5:
+            QMessageBox.information(None,'NOOBBANK','Valor para saque inválido.')
+            self.tela_saque.lineEdit.setText('')
+            self.tela_saque.lineEdit_2.setText('')
+        elif retorno == 6:
+            QMessageBox.information(None,'NOOBBANK','Saldo insuficiente para realizar saque.')
+            self.tela_saque.lineEdit.setText('')
+            self.tela_saque.lineEdit_2.setText('')
+        elif retorno == 7:
+            QMessageBox.information(None,'NOOBBANK','Saque realizado com sucesso.')
+            self.tela_saque.lineEdit.setText('')
+            self.tela_saque.lineEdit_2.setText('')
 
     def abrirTransferencia(self):
         self.tela_transferencia.lineEdit.setText('')
@@ -318,68 +295,46 @@ class Main(QMainWindow, Ui_Main):
         self.QtStack.setCurrentIndex(5)
 
     def transferir(self):
-        if not(self.tela_transferencia.lineEdit.text() == '' or self.tela_transferencia.lineEdit_3.text() == '' or self.tela_transferencia.lineEdit_2.text() == ''):
-            try:
-                float(self.tela_transferencia.lineEdit.text())
-            except:
-                QMessageBox.information(None,'NOOBBANK','Valor de transferência inválido.')
-                self.tela_transferencia.lineEdit.setText('')
-                self.tela_transferencia.lineEdit_3.setText('')
-                self.tela_transferencia.lineEdit_2.setText('')
-            else:       
-                valor = float(self.tela_transferencia.lineEdit.text())
-                if self.bd.conexao.is_connected():
-                    try:
-                        conta = self.bd.buscaUsuario(self.tela_principal.lineEdit.text())
-                        if conta[5] >= valor:
-                            try:
-                                int(self.tela_transferencia.lineEdit_3.text())
-                            except:
-                                QMessageBox.information(None,'NOOBBANK','Número de conta inválido.')
-                                self.tela_transferencia.lineEdit_3.setText('')
-                                self.tela_transferencia.lineEdit_2.setText('')
-                            else:
-                                numConta = int(self.tela_transferencia.lineEdit_3.text())
-                                destinatario = self.bd.buscaUsuario(nConta=True,conta=numConta)
-                                if destinatario != None:
-                                    if destinatario[0] != conta[0]:
-                                        if self.bd.confereSenha(self.tela_principal.lineEdit.text(),self.tela_transferencia.lineEdit_2.text()):
-                                            self.bd.atualizaSaldo(saca=True,dinheiro=(conta[5]-valor),conta=conta[0])
-                                            self.bd.transacao(conta[0],"TRANSFERENCIA FEITA PARA",valor,destinatario[0])
-
-                                            valor += destinatario[5]
-                                            self.bd.atualizaSaldo(deposita=True,dinheiro=valor,conta=destinatario[0])
-                                            self.bd.transacao(destinatario[0],"TRANSFERENCIA RECEBIDA POR",valor-destinatario[5],conta[0])
-
-                                            QMessageBox.information(None,'NOOBBANK','Transferência realizada com sucesso.')
-                                            self.tela_transferencia.lineEdit.setText('')
-                                            self.tela_transferencia.lineEdit_3.setText('')
-                                            self.tela_transferencia.lineEdit_2.setText('')
-                                            
-                                        else:
-                                            QMessageBox.information(None,'NOOBBANK','Senha incorreta.')
-                                            self.tela_transferencia.lineEdit.setText('')
-                                            self.tela_transferencia.lineEdit_3.setText('')
-                                            self.tela_transferencia.lineEdit_2.setText('')
-                                    else:
-                                        QMessageBox.information(None,'NOOBBANK','Não é possível realizar transferência para a mesma conta.')
-                                        self.tela_transferencia.lineEdit_3.setText('')
-                                        self.tela_transferencia.lineEdit_2.setText('')   
-                                else:
-                                    QMessageBox.information(None,'NOOBBANK','Conta não encontrada.')
-                                    self.tela_transferencia.lineEdit.setText('')
-                        else:
-                            QMessageBox.information(None,'NOOBBANK','Saldo insuficiente para realizar transferência.')
-                            self.tela_transferencia.lineEdit.setText('')
-                            self.tela_transferencia.lineEdit_3.setText('')
-                            self.tela_transferencia.lineEdit_2.setText('')  
-                    except:
-                        self.QtStack.setCurrentIndex(6)
-                else:
-                    self.QtStack.setCurrentIndex(6)         
-        else:
+        self.cliente.requisicao(F"TRANSFERENCIA,{self.tela_transferencia.lineEdit.text()},{self.tela_transferencia.lineEdit_3.text()},{self.tela_transferencia.lineEdit_2.text()},{self.tela_principal.lineEdit.text()},{self.tela_principal.lineEdit_2.text()}")
+        self.cliente.resposta()
+        retorno = int(self.cliente.retorno)
+        if retorno == 1:
             QMessageBox.information(None,'NOOBBANK','Todos os campos devem ser preenchidos.')
-   
+        elif retorno == 2:
+            QMessageBox.information(None,'NOOBBANK','Valor de transferência inválido.')
+            self.tela_transferencia.lineEdit.setText('')
+            self.tela_transferencia.lineEdit_3.setText('')
+            self.tela_transferencia.lineEdit_2.setText('')
+        elif retorno == 3:
+            self.QtStack.setCurrentIndex(6)
+        elif retorno == 4:
+            QMessageBox.information(None,'NOOBBANK','Saldo insuficiente para realizar transferência.')
+            self.tela_transferencia.lineEdit.setText('')
+            self.tela_transferencia.lineEdit_3.setText('')
+            self.tela_transferencia.lineEdit_2.setText('')
+        elif retorno == 5:
+            QMessageBox.information(None,'NOOBBANK','Número de conta inválido.')
+            self.tela_transferencia.lineEdit_3.setText('')
+            self.tela_transferencia.lineEdit_2.setText('')
+        elif retorno == 6:
+            QMessageBox.information(None,'NOOBBANK','Conta não encontrada.')
+            self.tela_transferencia.lineEdit_3.setText('')
+            self.tela_transferencia.lineEdit_2.setText('')
+        elif retorno == 7:
+            QMessageBox.information(None,'NOOBBANK','Não é possível realizar transferência para a mesma conta.')
+            self.tela_transferencia.lineEdit_3.setText('')
+            self.tela_transferencia.lineEdit_2.setText('')
+        elif retorno == 8:
+            QMessageBox.information(None,'NOOBBANK','Senha incorreta.')
+            self.tela_transferencia.lineEdit.setText('')
+            self.tela_transferencia.lineEdit_3.setText('')
+            self.tela_transferencia.lineEdit_2.setText('')
+        elif retorno == 9:
+            QMessageBox.information(None,'NOOBBANK','Transferência realizada com sucesso.')
+            self.tela_transferencia.lineEdit.setText('')
+            self.tela_transferencia.lineEdit_3.setText('')
+            self.tela_transferencia.lineEdit_2.setText('')
+
     def sairTransferencia(self):
         self.tela_transferencia.lineEdit.setText('')
         self.tela_transferencia.lineEdit_3.setText('')
