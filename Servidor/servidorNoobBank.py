@@ -6,12 +6,12 @@ class Servidor():
         self.conectServer = self.conectarServidor(host,port)
 
     def conectarServidor(self,host,port):
-        servidor = host#Máquina
-        porta = port#Porta da máquina
-        addr = (servidor,porta)#Endereço com as variáveis acima
-        self.serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)#Conexção 
-        self.serv_socket.bind(addr)#Ligar conexão
-        self.serv_socket.listen(10)#Máximo de conexões
+        servidor = host
+        porta = port
+        addr = (servidor,porta)
+        self.serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.serv_socket.bind(addr)
+        self.serv_socket.listen(10)
         print('Aguardando conexao...')
         self.con, self.cliente = self.serv_socket.accept()
         print('Conectado')
@@ -146,7 +146,6 @@ class Servidor():
                 int(valores[0])
             except:
                 self.con.send('1'.encode())
-                return 1
             else:
                 cpf = valores[0]
                 senha =  valores[1]
@@ -212,9 +211,6 @@ class Servidor():
             self.bd.TabelaUsuario()
             self.bd.TabelaTransacoes()
             return True
-            self.tela_principal.lineEdit.setText('')
-            self.tela_principal.lineEdit_2.setText('')
-            self.QtStack.setCurrentIndex(0)
         
     def desconectarServidor(self):
         self.bd.EncerraBanco()
@@ -250,11 +246,14 @@ if __name__ == '__main__':
                 break
             elif mensagem[0] == 'HISTORICO':
                 historico = servidor.bd.PreencheHistorico(mensagem[1])
-                retorno = ""
-                for h in historico:
-                    retorno += F"{h}"
-                    retorno += "|"
-                servidor.con.send(retorno.encode())
+                if len(historico) == 0:
+                    servidor.con.send('False'.encode())
+                else:
+                    retorno = ""
+                    for h in historico:
+                        retorno += F"{h}"
+                        retorno += "|"
+                    servidor.con.send(retorno.encode())
         except:
             servidor.serv_socket.close()
             break

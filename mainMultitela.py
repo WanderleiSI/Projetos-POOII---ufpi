@@ -75,6 +75,9 @@ class Main(QMainWindow, Ui_Main):
             self.servidor.bd.TabelaTransacoes()"""
         
         self.cliente = Cliente()
+        if not self.cliente.conectado:
+            QMessageBox.information(None,'NOOBBANK','Não foi possível conectar ao servidor :(')
+            sys.exit()
             
         self.tela_principal.botaoPrincipalEntrar.clicked.connect(self.abrirTelaCliente)
         self.tela_principal.botaoPrincipalCadastrar.clicked.connect(self.abrirTelaCadastro)
@@ -120,7 +123,10 @@ class Main(QMainWindow, Ui_Main):
     def abrirTelaCliente(self):
         self.cliente.requisicao(f"CLIENTE,{self.tela_principal.lineEdit.text()},{self.tela_principal.lineEdit_2.text()}")
         self.cliente.resposta()
-        if isinstance(self.cliente.retorno,str):
+        try:
+            #if isinstance(self.cliente.retorno,str):
+            int(self.cliente.retorno)
+        except:
             usuario = self.cliente.retorno.split(',')
             _translate = QtCore.QCoreApplication.translate
             self.tela_cliente.label_3.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:18pt;\">Bem-vindo(a) {}</span></p></body></html>").format(usuario[1]))
@@ -151,34 +157,21 @@ class Main(QMainWindow, Ui_Main):
         self.tela_cliente.listWidget.clear()
         self.cliente.requisicao(F'HISTORICO,{idCliente}')
         self.cliente.resposta()
-        historico = self.cliente.retorno.split("|")
-        historico.pop()
-
-        for h in historico:
-            aux = h[1:-1].split(",")
-            if aux[2] == " 'DEPOSITO'":
-                self.tela_cliente.listWidget.addItem(F"Depósito de R${float(aux[4]):.2f}")
-                #aux[2] = 'DEPOSITO'
-            elif aux[2] == " 'SAQUE'":
-                self.tela_cliente.listWidget.addItem(F"Saque de R${float(aux[4]):.2f}")
-                #aux[2] = 'SAQUE'
-            elif aux[2] == " 'TRANSFERENCIA FEITA PARA'":
-                self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} para conta nº {aux[3]}")
-                #aux[2] = 'TRANSFERENCIA FEITA PARA'
-            elif aux[2] == " 'TRANSFERENCIA RECEBIDA POR'":
-                self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} por conta nº {aux[3]}")
-                #aux[2] = 'TRANSFERENCIA RECEBIDA POR'
-                
-            """if aux[2] == "DEPOSITO":
-                self.tela_cliente.listWidget.addItem(F"Depósito de R${float(aux[4]):.2f}")
-            elif aux[2] == "SAQUE":
-                self.tela_cliente.listWidget.addItem(F"Saque de R${float(aux[4]):.2f}")
-            elif aux[2] == "TRANSFERENCIA RECEBIDA POR":
-                self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} por conta nº {aux[3]}")
-            elif aux[2] == "TRANSFERENCIA FEITA PARA":
-                self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} para conta nº {aux[3]}")"""
+        historico = self.cliente.retorno
+        if historico != 'False':
+            historico = self.cliente.retorno.split("|")
+            historico.pop()
+            for h in historico:
+                aux = h[1:-1].split(",")
+                if aux[2] == " 'DEPOSITO'":
+                    self.tela_cliente.listWidget.addItem(F"Depósito de R${float(aux[4]):.2f}")
+                elif aux[2] == " 'SAQUE'":
+                    self.tela_cliente.listWidget.addItem(F"Saque de R${float(aux[4]):.2f}")
+                elif aux[2] == " 'TRANSFERENCIA FEITA PARA'":
+                    self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} para conta nº {aux[3]}")
+                elif aux[2] == " 'TRANSFERENCIA RECEBIDA POR'":
+                    self.tela_cliente.listWidget.addItem(F"Transferência de R${float(aux[4]):.2f} por conta nº {aux[3]}")
         self.QtStack.setCurrentIndex(2)
-
 
     def sairPrincipal(self):
         self.cliente.requisicao("DESCONECTAR_SERVIDOR")
