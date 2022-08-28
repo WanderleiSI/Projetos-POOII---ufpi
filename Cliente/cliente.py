@@ -1,6 +1,6 @@
 import socket
-ip = '10.180.41.142'
-port = 8006
+ip = 'localhost'
+port = 8000
 addr = ((ip,port))
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client_socket.connect(addr)
