@@ -2,7 +2,7 @@ import socket
 from bancoDeDados import BancoDeDados
 
 class Servidor():
-    def __init__(self,host='localhost',port=8000):
+    def __init__(self,host='',port=8000):
         self.conectServer = self.conectarServidor(host,port)
 
     def conectarServidor(self,host,port):
