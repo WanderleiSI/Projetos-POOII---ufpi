@@ -21,7 +21,8 @@ class Servidor():
         self.bd = BancoDeDados()
         self.bd.conectarBanco()
         self.bd.TabelaUsuario()
-        self.bd.TabelaUsuario()
+        #self.bd.TabelaUsuario()
+        self.bd.TabelaTransacoes()
 
     def receberRequisicao(self):
         mensagem = self.con.recv(1024)

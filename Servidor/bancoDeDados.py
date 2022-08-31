@@ -9,7 +9,8 @@ class BancoDeDados:
         
     def conectarBanco(self):
         try:
-            self.conexao = mysql.connector.connect(host='localhost',database='noobbank',user='root',password='')
+            #self.conexao = mysql.connector.connect(host='localhost',database='noobbank',user='root',password='')
+            self.conexao = mysql.connector.connect(host='localhost',port='3300', database='noobbank',user='wanderlei',password='wanderlei')
             self.cursor = self.conexao.cursor()
             self.conectado = True
         except Error as erro:
@@ -56,6 +57,7 @@ class BancoDeDados:
         dados = F"{idCliente},'{transacao}',{valor},{destinatario});"
         sql = """INSERT INTO transacoes(idCliente,transacao,valor,destinatario) VALUES(""" + dados
         self.cursor.execute(sql)
+        self.conexao.commit()
     
     def InsereUsuario(self,nome,sobrenome,cpf,senha):
         pessoa = self.buscaUsuario(cpf)
@@ -67,6 +69,7 @@ class BancoDeDados:
             dados = F"'{nome}','{sobrenome}','{cpf}','{hash}');"
             sql = """INSERT INTO clientes (nome,sobrenome,cpf,senha) VALUES(""" + dados
             self.cursor.execute(sql)
+            self.conexao.commit()
             return True
         else:
             return False
@@ -102,11 +105,14 @@ class BancoDeDados:
     def atualizaSaldo(self,deposita=False,saca=False,transfere=False,dinheiro = 0.0, conta=None,contaTransfere=None):
         if deposita:
             self.cursor.execute(F"UPDATE clientes SET saldo = {dinheiro} WHERE nConta = {conta};")
+            self.conexao.commit()
         if saca:
             self.cursor.execute(F"UPDATE clientes SET saldo = {dinheiro} WHERE nConta = {conta};")
+            self.conexao.commit()
         if transfere:
             self.cursor.execute(F"UPDATE clientes SET saldo = {dinheiro} WHERE nConta = {conta};")
             self.cursor.execute(F"UPDATE clientes SET saldo = {dinheiro} WHERE nConta = {contaTransfere};")
+            self.conexao.commit()
 
     def EncerraBanco(self):
         self.conexao.commit()
