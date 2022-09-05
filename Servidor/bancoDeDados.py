@@ -9,8 +9,8 @@ class BancoDeDados:
         
     def conectarBanco(self):
         try:
-            #self.conexao = mysql.connector.connect(host='localhost',database='noobbank',user='root',password='')
-            self.conexao = mysql.connector.connect(host='localhost',port='3300', database='noobbank',user='wanderlei',password='wanderlei')
+            self.conexao = mysql.connector.connect(host='localhost',database='noobbank',user='root',password='')
+            #self.conexao = mysql.connector.connect(host='localhost',port='3300', database='noobbank',user='wanderlei',password='wanderlei')
             self.cursor = self.conexao.cursor()
             self.conectado = True
         except Error as erro:
