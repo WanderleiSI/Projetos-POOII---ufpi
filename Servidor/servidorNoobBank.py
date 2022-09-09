@@ -1,5 +1,6 @@
-import socket
+import socket, threading
 from bancoDeDados import BancoDeDados
+from threadsNoobBank import Threads
 
 class Servidor():
     def __init__(self,host='',port=8000):
@@ -220,10 +221,10 @@ class Servidor():
 if __name__ == '__main__':
     servidor = Servidor()
     servidor.criarBancoDeDados()
-   
+    sinc = threading.Lock()
     while True:
         try:
-            mensagem = servidor.con.recv(1024)
+            """mensagem = servidor.con.recv(1024)
             mensagem = mensagem.decode()
             mensagem = mensagem.split(',')
             if mensagem[0] == 'CLIENTE':
@@ -254,7 +255,15 @@ if __name__ == '__main__':
                     for h in historico:
                         retorno += F"{h}"
                         retorno += "|"
-                    servidor.con.send(retorno.encode())
+                    servidor.con.send(retorno.encode())"""
+
+            servidor.serv_socket.listen(1)
+            servidor.con, servidor.cliente = servidor.serv_socket.accept()
+            thread = Threads(sinc,servidor.cliente,servidor.con)
+            #thread.run(mensagem,servidor)
+            thread.start()
+            #thread.join()
+
         except:
             servidor.serv_socket.close()
             break

@@ -1,7 +1,8 @@
 from audioop import add
 import socket
 ip = input('Digite o ip de conexao: ')
-port = 8001
+port = 7001
+#Troquei a porta de 8001 para 7001
 name = input("Qual seu nome? ")
 addr = ((ip,port))
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
