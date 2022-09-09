@@ -6,18 +6,20 @@ class Threads(threading.Thread):
         self.clientAddress = clientAddress
         self.clientSock = clientSock
 
-    def run(self,requisicao,servidor):
+    def run(self,servidor):
         #requisicao = servidor.con.recv(1024)
         #requisicao = requisicao.decode()
         #requisicao = requisicao.split(',')
+        print("Entrei no run")
         while True:
             requisicao = self.clientSock.recv(1024)
             requisicao = self.clientSock.decode()
             requisicao = self.clientSock.split(',')
+            #print(servidor.con.recv(1024).decode())
             
             self.sinc.acquire()
             if requisicao[0] == 'CLIENTE':
-                    servidor.requisicaoChecagem('CLIENTE',(requisicao[1],requisicao[2]))
+                servidor.requisicaoChecagem('CLIENTE',(requisicao[1],requisicao[2]))
             elif requisicao == 'CONECTAR_BANCO_DE_DADOS':
                 servidor.bd.conectarBanco()
                 if servidor.bd.conexao.is_connected():

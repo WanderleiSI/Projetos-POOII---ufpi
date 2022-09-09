@@ -12,11 +12,11 @@ class Servidor():
         addr = (servidor,porta)
         self.serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serv_socket.bind(addr)
-        self.serv_socket.listen(10)
+        """self.serv_socket.listen(10)
         print('Aguardando conexao...')
         self.con, self.cliente = self.serv_socket.accept()
         print('Conectado')
-        print('Aguardando mensagens...')
+        print('Aguardando mensagens...')"""
     
     def criarBancoDeDados(self):    
         self.bd = BancoDeDados()
@@ -256,13 +256,17 @@ if __name__ == '__main__':
                         retorno += F"{h}"
                         retorno += "|"
                     servidor.con.send(retorno.encode())"""
-
+            print("Dentro do loop do servidor")
             servidor.serv_socket.listen(1)
+            print("Escutei uma conexao")
             servidor.con, servidor.cliente = servidor.serv_socket.accept()
+            print("Aceitei a conexao")
             thread = Threads(sinc,servidor.cliente,servidor.con)
-            #thread.run(mensagem,servidor)
-            thread.start()
+            print("Criei a thread")
+            thread.run(servidor)
+            #thread.start()
             #thread.join()
+            print("Startei a thread")
 
         except:
             servidor.serv_socket.close()
