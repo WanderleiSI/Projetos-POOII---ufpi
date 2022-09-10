@@ -21,16 +21,10 @@ class Servidor():
     
     def criarBancoDeDados(self):    
         self.bd = BancoDeDados()
-        self.sinc.acquire()
         self.bd.conectarBanco()
-        self.sinc.release()
-        self.sinc.acquire()
         self.bd.TabelaUsuario()
-        self.sinc.release()
         #self.bd.TabelaUsuario()
-        self.sinc.acquire()
         self.bd.TabelaTransacoes()
-        self.sinc.release()
 
     def receberRequisicao(self):
         mensagem = self.con.recv(1024)
@@ -320,13 +314,13 @@ if __name__ == '__main__':
             print("Dentro do loop do servidor")
             servidor.serv_socket.listen(10)
             print("Escutei uma conexao")
-            servidor.con, servidor.cliente = servidor.serv_socket.accept()
-            #clientsocket, clientAddress = servidor.serv_socket.accept()
+            #servidor.con, servidor.cliente = servidor.serv_socket.accept()
+            clientsocket, clientAddress = servidor.serv_socket.accept()
             #servidor.con = clientsocket
             #servidor.cliente = clientAddress
             print("Aceitei a conexao")
-            #thread = Threads(sinc,clientAddress,clientsocket,servidor)
-            thread = Threads(sinc,servidor.cliente, servidor.con,servidor)
+            thread = Threads(sinc,clientAddress,clientsocket,servidor)
+            #thread = Threads(sinc,servidor.cliente, servidor.con,servidor)
             print("Criei a thread")
             #thread.run(servidor)
             thread.start()
