@@ -1,50 +1,53 @@
 import threading
 
 class Threads(threading.Thread):
-    def __init__(self,sinc,clientAddress,clientSock):
+    def __init__(self,sinc,clientAddress,clientSock,servidor):
+        threading.Thread.__init__(self)
         self.sinc = sinc
         self.clientAddress = clientAddress
         self.clientSock = clientSock
+        self.servidor = servidor
 
-    def run(self,servidor):
+    def run(self):
         #requisicao = servidor.con.recv(1024)
         #requisicao = requisicao.decode()
         #requisicao = requisicao.split(',')
         print("Entrei no run")
         while True:
+            print("Entrei no While")
             requisicao = self.clientSock.recv(1024)
-            requisicao = self.clientSock.decode()
-            requisicao = self.clientSock.split(',')
+            requisicao = requisicao.decode()
+            requisicao = requisicao.split(',')
             #print(servidor.con.recv(1024).decode())
             
             self.sinc.acquire()
             if requisicao[0] == 'CLIENTE':
-                servidor.requisicaoChecagem('CLIENTE',(requisicao[1],requisicao[2]))
+                self.servidor.requisicaoChecagem('CLIENTE',(requisicao[1],requisicao[2]))
             elif requisicao == 'CONECTAR_BANCO_DE_DADOS':
-                servidor.bd.conectarBanco()
-                if servidor.bd.conexao.is_connected():
-                    servidor.con.send("CONECTADO".encode())
+                self.servidor.bd.conectarBanco()
+                if self.servidor.bd.conexao.is_connected():
+                    self.servidor.con.send("CONECTADO".encode())
                 else:
-                    servidor.con.send("DESCONECTADO".encode())
+                    self.servidor.con.send("DESCONECTADO".encode())
             elif requisicao[0] == 'CADASTRO':
-                servidor.requisicaoChecagem('CADASTRO',(requisicao[1],requisicao[2],requisicao[3],requisicao[4],requisicao[5]))
+                self.servidor.requisicaoChecagem('CADASTRO',(requisicao[1],requisicao[2],requisicao[3],requisicao[4],requisicao[5]))
             elif requisicao[0] == 'DEPOSITO':
-                servidor.requisicaoValor('DEPOSITO',(requisicao[1],requisicao[2],requisicao[3],requisicao[4]))
+                self.servidor.requisicaoValor('DEPOSITO',(requisicao[1],requisicao[2],requisicao[3],requisicao[4]))
             elif requisicao[0] == 'SAQUE':
-                servidor.requisicaoValor('SAQUE',(requisicao[1],requisicao[2],requisicao[3],requisicao[4]))
+                self.servidor.requisicaoValor('SAQUE',(requisicao[1],requisicao[2],requisicao[3],requisicao[4]))
             elif requisicao[0] == 'TRANSFERENCIA':
-                servidor.requisicaoValor('TRANSFERENCIA',(requisicao[1],requisicao[2],requisicao[3],requisicao[4],requisicao[5]))
+                self.servidor.requisicaoValor('TRANSFERENCIA',(requisicao[1],requisicao[2],requisicao[3],requisicao[4],requisicao[5]))
             elif requisicao[0] == 'DESCONECTAR_SERVIDOR':
-                servidor.desconectarServidor()
+                self.servidor.desconectarServidor()
                 #break
             elif requisicao[0] == 'HISTORICO':
-                historico = servidor.bd.PreencheHistorico(requisicao[1])
+                historico = self.servidor.bd.PreencheHistorico(requisicao[1])
                 if len(historico) == 0:
-                    servidor.con.send('False'.encode())
+                    self.servidor.con.send('False'.encode())
                 else:
                     retorno = ""
                     for h in historico:
                         retorno += F"{h}"
                         retorno += "|"
-                    servidor.con.send(retorno.encode())
+                    self.servidor.con.send(retorno.encode())
             self.sinc.release()            
