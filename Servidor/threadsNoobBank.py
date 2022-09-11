@@ -1,4 +1,5 @@
 import threading
+#import copy
 
 class Threads(threading.Thread):
     def __init__(self,sinc,clientAddress,clientSock,servidor):
@@ -6,6 +7,8 @@ class Threads(threading.Thread):
         self.sinc = sinc
         self.clientAddress = clientAddress
         self.clientSock = clientSock
+        #self.servidor = copy.deepcopy(servidor)
+        #self.servidor.con = self.clientSock
         self.servidor = servidor
         servidor.con = self.clientSock
     def run(self):
