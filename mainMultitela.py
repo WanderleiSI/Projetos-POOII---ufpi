@@ -135,7 +135,8 @@ class Main(QMainWindow, Ui_Main):
             self.tela_cliente.label_11.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\"> {}</span></p></body></html>").format(usuario[3]))
             self.tela_cliente.label_12.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\"> {}</span></p></body></html>").format(str(usuario[0])))
 
-            self.historico(usuario[0])
+            #self.historico(usuario[0])
+            self.QtStack.setCurrentIndex(2)
             
         else:
             retorno = int(self.cliente.retorno)

@@ -7,7 +7,7 @@ class Threads(threading.Thread):
         self.clientAddress = clientAddress
         self.clientSock = clientSock
         self.servidor = servidor
-
+        servidor.con = self.clientSock
     def run(self):
         #requisicao = servidor.con.recv(1024)
         #requisicao = requisicao.decode()
@@ -41,6 +41,7 @@ class Threads(threading.Thread):
                 self.servidor.desconectarServidor()
                 #break
             elif requisicao[0] == 'HISTORICO':
+                print(requisicao)
                 historico = self.servidor.bd.PreencheHistorico(requisicao[1])
                 if len(historico) == 0:
                     self.servidor.con.send('False'.encode())
