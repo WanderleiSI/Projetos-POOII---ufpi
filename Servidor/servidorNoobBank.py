@@ -362,6 +362,7 @@ if __name__ == '__main__':
             #servidor.con = clientsocket
             #servidor.cliente = clientAddress
             print("Aceitei a conexao")
+            sinc = threading.Lock()
             thread = Threads(sinc,clientAddress,clientsocket,servidor)
             #thread = Threads(sinc,servidor.cliente, servidor.con,servidor)
             print("Criei a thread")

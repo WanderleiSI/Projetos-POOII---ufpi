@@ -25,6 +25,7 @@ class Threads(threading.Thread):
             
             self.sinc.acquire()
             if requisicao[0] == 'CLIENTE':
+                print(requisicao)
                 self.servidor.requisicaoChecagem('CLIENTE',(requisicao[1],requisicao[2]),self.clientSock)
             elif requisicao == 'CONECTAR_BANCO_DE_DADOS':
                 self.servidor.bd.conectarBanco()
@@ -43,6 +44,7 @@ class Threads(threading.Thread):
             elif requisicao[0] == 'DESCONECTAR_SERVIDOR':
                 #self.servidor.desconectarServidor()
                 #self.sinc.release()
+                print("Finalizando cliente")
                 self.clientSock.close()
                 break
             elif requisicao[0] == 'HISTORICO':
