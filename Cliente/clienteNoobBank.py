@@ -19,4 +19,4 @@ class Cliente:
         self.client_socket.send(requisicao.encode())
     
     def resposta(self):
-        self.retorno = self.client_socket.recv(1024).decode()
+        self.retorno = self.client_socket.recv(1024 * 256).decode()

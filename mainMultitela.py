@@ -121,6 +121,7 @@ class Main(QMainWindow, Ui_Main):
         self.QtStack.setCurrentIndex(1)
 
     def abrirTelaCliente(self):
+        sys.stdout.flush()
         self.cliente.requisicao(f"CLIENTE,{self.tela_principal.lineEdit.text()},{self.tela_principal.lineEdit_2.text()}")
         self.cliente.resposta()
         try:
@@ -136,6 +137,7 @@ class Main(QMainWindow, Ui_Main):
             self.tela_cliente.label_12.setText(_translate("MainWindow", "<html><head/><body><p><span style=\" font-size:14pt;\"> {}</span></p></body></html>").format(str(usuario[0])))
 
             self.historico(usuario[0])
+            #self.QtStack.setCurrentIndex(2)
             
         else:
             retorno = int(self.cliente.retorno)
@@ -154,6 +156,7 @@ class Main(QMainWindow, Ui_Main):
                 
              
     def historico(self,idCliente=None):
+        sys.stdout.flush()
         self.tela_cliente.listWidget.clear()
         self.cliente.requisicao(F'HISTORICO,{idCliente}')
         self.cliente.resposta()

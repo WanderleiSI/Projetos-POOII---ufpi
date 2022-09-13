@@ -36,13 +36,15 @@ class Servidor():
 
         pass
 
-    def requisicaoValor(self,requisição=None,valores=None):
+    def requisicaoValor(self,requisição=None,valores=None,conexao=None):
+        self.conexao = conexao
         if requisição == 'DEPOSITO':
             if not(valores[0] == '' or valores[1] == ''):
                 try:
                     float(valores[0])
                 except:
-                    self.con.send('2'.encode())
+                    #self.con.send('2'.encode())
+                    self.conexao.send('2'.encode())
                 else:    
                     valor = float(valores[0])
                     self.sinc.acquire()
@@ -65,25 +67,33 @@ class Servidor():
                                         self.sinc.acquire()
                                         self.bd.transacao(conta[0],"DEPOSITO",valor,conta[0]) 
                                         self.sinc.release()
-                                        self.con.send('6'.encode())
+                                        #self.con.send('6'.encode())
+                                        self.conexao.send('6'.encode())
                                     except:
-                                        self.con.send('3'.encode())
+                                        #self.con.send('3'.encode())
+                                        self.conexao.send('3'.encode())
                                 else:
-                                    self.con.send('5'.encode())
+                                    #self.con.send('5'.encode())
+                                    self.conexao.send('5'.encode())
                             else: 
-                                self.con.send('4'.encode()) 
+                                #self.con.send('4'.encode())
+                                self.conexao.send('4'.encode())
                         except:
-                            self.con.send('3'.encode())
+                            #self.con.send('3'.encode())
+                            self.conexao.send('3'.encode())
                     else: 
-                        self.con.send('3'.encode())       
+                        #self.con.send('3'.encode())  
+                        self.conexao.send('3'.encode())
             else:
-                self.con.send('1'.encode())
+                #self.con.send('1'.encode())
+                self.conexao.send('1'.encode())
         elif requisição == 'SAQUE':
             if not(valores[0] == '' or valores[1] == ''):
                 try:
                     float(valores[0])
                 except:
-                    self.con.send('2'.encode())
+                    #self.con.send('2'.encode())
+                    self.conexao.send('2'.encode())
                 else:
                     valor = float(valores[0])
                     self.sinc.acquire()
@@ -104,25 +114,33 @@ class Servidor():
                                         self.sinc.acquire()
                                         self.bd.transacao(conta[0],"SAQUE",valor,conta[0])
                                         self.sinc.release()
-                                        self.con.send('7'.encode())
+                                        #self.con.send('7'.encode())
+                                        self.conexao.send('7'.encode())
                                     else:
-                                        self.con.send('6'.encode())
+                                        #self.con.send('6'.encode())
+                                        self.conexao.send('6'.encode())
                                 else:
-                                    self.con.send('5'.encode())
+                                    #self.con.send('5'.encode())
+                                    self.conexao.send('5'.encode())
                             else:
                                 self.con.send('4'.encode())
+                                #self.conexao.send('4'.encode())
                         except:
-                            self.con.send('3'.encode())
+                            #self.con.send('3'.encode())
+                            self.conexao.send('3'.encode())
                     else:  
-                        self.con.send('3'.encode())     
+                        #self.con.send('3'.encode())  
+                        self.conexao.send('3'.encode())   
             else:
-                self.con.send('1'.encode())
+                #self.con.send('1'.encode())
+                self.conexao.send('1'.encode())
         elif requisição == 'TRANSFERENCIA':
             if not(valores[0] == '' or valores[1] == '' or valores[2] == ''):
                 try:
                     float(valores[0])
                 except:
-                    self.con.send('2'.encode())
+                    #self.con.send('2'.encode())
+                    self.conexao.send('2'.encode())
                 else:       
                     valor = float(valores[0])
                     self.sinc.acquire()
@@ -136,7 +154,8 @@ class Servidor():
                                 try:
                                     int(valores[1])
                                 except:
-                                    self.con.send('5'.encode())
+                                    #self.con.send('5'.encode())
+                                    self.conexao.send('5'.encode())
                                 else:
                                     numConta = int(valores[1])
                                     self.sinc.acquire()
@@ -162,29 +181,39 @@ class Servidor():
                                                 self.bd.transacao(destinatario[0],"TRANSFERENCIA RECEBIDA POR",valor-destinatario[5],conta[0])
                                                 self.sinc.release()
 
-                                                self.con.send('9'.encode())
+                                                #self.con.send('9'.encode())
+                                                self.conexao.send('9'.encode())
                                             else:
-                                                self.con.send('8'.encode())
+                                                #self.con.send('8'.encode())
+                                                self.conexao.send('8'.encode())
                                         else: 
-                                            self.con.send('7'.encode())  
+                                            #self.con.send('7'.encode())  
+                                            self.conexao.send('7'.encode())
                                     else:
-                                        self.con.send('6'.encode())
+                                        #self.con.send('6'.encode())
+                                        self.conexao.send('6'.encode())
                             else:  
-                                self.con.send('4'.encode())
+                                #self.con.send('4'.encode())
+                                self.conexao.send('4'.encode())
                         except:
-                            self.con.send('3'.encode())
+                            #self.con.send('3'.encode())
+                            self.conexao.send('3'.encode())
                     else: 
-                        self.con.send('3'.encode())        
+                        #self.con.send('3'.encode()) 
+                        self.conexao.send('3'.encode())       
             else:
-                self.con.send('1'.encode())
+                #self.con.send('1'.encode())
+                self.conexao.send('1'.encode())
         
-
-    def requisicaoChecagem(self,tela=None,valores=None):
+        
+    def requisicaoChecagem(self,tela=None,valores=None,conexao=None):
+        self.conexao = conexao
         if tela == 'CLIENTE':
             try:
                 int(valores[0])
             except:
-                self.con.send('1'.encode())
+                #self.con.send('1'.encode())
+                self.conexao.send('1'.encode())
             else:
                 cpf = valores[0]
                 senha =  valores[1]
@@ -201,17 +230,23 @@ class Servidor():
                                 if self.bd.confereSenha(cpf,senha):
                                     self.sinc.release()
                                     usuario = F"{conta[0]},{conta[1]},{conta[2]},{conta[3]},{conta[4]},{conta[5]}"
-                                    self.con.send(usuario.encode())
+                                    #self.con.send(usuario.encode())
+                                    self.conexao.send(usuario.encode())
                                 else:
-                                    self.con.send('5'.encode())
+                                    #self.con.send('5'.encode())
+                                    self.conexao.send('5'.encode())
                             else:
-                                self.con.send('4'.encode())
+                                #self.con.send('4'.encode())
+                                self.conexao.send('4'.encode())
                         else:
-                            self.con.send('3'.encode())
+                            #self.con.send('3'.encode())
+                            self.conexao.send('3'.encode())
                     except: 
-                        self.con.send('2'.encode())  
+                        #self.con.send('2'.encode()) 
+                        self.conexao.send('2'.encode()) 
                 else:
-                    self.con.send('2'.encode())
+                    #self.con.send('2'.encode())
+                    self.conexao.send('2'.encode())
         elif tela == 'CADASTRO':
             try:
                 int(valores[0])
@@ -238,21 +273,29 @@ class Servidor():
                                         self.sinc.acquire()
                                         if (self.bd.InsereUsuario(nome,sobrenome,cpf,senha)):
                                             self.sinc.release()
-                                            self.con.send('7'.encode())
+                                            #self.con.send('7'.encode())
+                                            self.conexao.send('7'.encode())
                                         else:
-                                            self.con.send('8'.encode())
+                                            #self.con.send('8'.encode())
+                                            self.conexao.send('8'.encode())
                                     except:
-                                        self.con.send('6'.encode())
+                                        #self.con.send('6'.encode())
+                                        self.conexao.send('6'.encode())
                                 else:
-                                    self.con.send('6'.encode())
+                                    #self.con.send('6'.encode())
+                                    self.conexao.send('6'.encode())
                             else:
-                                self.con.send('5'.encode())
+                                #self.con.send('5'.encode())
+                                self.conexao.send('5'.encode())
                         else:
-                            self.con.send('4'.encode())
+                            #self.con.send('4'.encode())
+                            self.conexao.send('4'.encode())
                 else:
-                    self.con.send('2'.encode())
+                    #self.con.send('2'.encode())
+                    self.conexao.send('2'.encode())
             else:
-                self.con.send('1'.encode())
+                #self.con.send('1'.encode())
+                self.conexao.send('1'.encode())
 
     def reconectar(self):
         self.sinc.acquire()
@@ -319,6 +362,7 @@ if __name__ == '__main__':
             #servidor.con = clientsocket
             #servidor.cliente = clientAddress
             print("Aceitei a conexao")
+            sinc = threading.Lock()
             thread = Threads(sinc,clientAddress,clientsocket,servidor)
             #thread = Threads(sinc,servidor.cliente, servidor.con,servidor)
             print("Criei a thread")
